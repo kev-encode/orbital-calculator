@@ -35,6 +35,7 @@ Comment types:
 
 ## Commit Conventions
 
+* Be concise and clear
 * Use conventional commits  (e.g., `feat`, `chore`)
 * Use scope (e.g., `docs(readme)`, `refactor(main)`)
 * If breaking change, use `!`, a body, and a footer (e.g., `feat(api)!`,  `-m "BREAKING CHANGE: ..."`, `-m "Refs: ..."`)
