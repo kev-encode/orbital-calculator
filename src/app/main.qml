@@ -7,7 +7,8 @@ Window {
     width: 300
     height: 200
     visible: true
-    title: "Hello World"
+    visibility: Window.Maximized
+    title: "Orbit Calculator"
 
     readonly property list<string> texts: ["Hallo Welt", "Hei maailma", "Hola Mundo", "Привет мир"]
 
