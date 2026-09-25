@@ -60,7 +60,9 @@ ApplicationWindow {
                 Layout.preferredHeight: 64
             }
 
-            Item { Layout.fillHeight: true }
+            Item {
+                Layout.fillHeight: true
+            }
 
             Placeholder {
                 label: "Orbit speed"
