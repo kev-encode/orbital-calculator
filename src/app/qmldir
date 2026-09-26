@@ -1,3 +1,4 @@
 module app
 main 254.0 main.qml
 OrbitView 254.0 OrbitView.qml
+ValueInput 254.0 ValueInput.qml

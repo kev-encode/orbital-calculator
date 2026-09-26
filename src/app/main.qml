@@ -48,16 +48,22 @@ ApplicationWindow {
                 Layout.preferredHeight: 64
             }
 
-            Placeholder {
+            ValueInput {
+                id: planet_input
                 label: "Planet radius"
+                value: 6371
+                from: 100
+                to: 100000
                 Layout.fillWidth: true
-                Layout.preferredHeight: 64
             }
 
-            Placeholder {
+            ValueInput {
+                id: altitude_input
                 label: "Satellite distance from ground"
+                value: 3629
+                from: 10
+                to: 100000
                 Layout.fillWidth: true
-                Layout.preferredHeight: 64
             }
 
             Item {
@@ -72,6 +78,9 @@ ApplicationWindow {
         }
 
         OrbitView {
+            planet_radius: planet_input.value
+            orbit_radius: planet_input.value + altitude_input.value
+            frozen: planet_input.dragging || altitude_input.dragging
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.preferredWidth: 3
