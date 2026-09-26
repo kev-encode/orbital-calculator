@@ -7,7 +7,7 @@
 ## Specifications
 
 * **Stack**
-    * `PyQt` and `PySide` for controlled design
+    * `PySide6` (Qt Quick / QML) for controlled design
 * **Functionality**
     * Orbit speed and visualization display
     * Planet mass, planet radius, and satellite distance from ground boxes for entry

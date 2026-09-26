@@ -26,7 +26,7 @@ ColumnLayout {
         required property real num
         property bool sci: false
 
-        signal committed(real v) // note: only emitted for v > 0; range rules live in each handler
+        signal committed(real v) // note: only emitted for v > 0; range rules live in input.setBounds
 
         function fmt(v) {
             return sci ? v.toExponential(3) : v.toFixed(0)

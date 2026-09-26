@@ -4,9 +4,9 @@ import QtQuick.Controls
 Item {
     id: view
 
-    property real planet_radius: 6371
-    property real orbit_radius: 10000
-    property real period: 5400
+    required property real planet_radius
+    required property real orbit_radius
+    required property real period
     readonly property real time_scale: 1800 // note: 1 s on screen = 30 min of orbit
     readonly property real spin: 360 * time_scale / Math.max(period, time_scale) // note: deg/s; capped at 1 rev/s so fast orbits don't alias
 
@@ -37,10 +37,8 @@ Item {
     }
 
     component Circle: Rectangle {
-        property real size
-        width: size
-        height: size
-        radius: size / 2
+        width: radius * 2 // note: callers set radius; Rectangle's corner radius doubles as the circle's
+        height: width
     }
 
     component Bar: Rectangle {
@@ -60,33 +58,28 @@ Item {
     Circle {
         id: orbit
         anchors.centerIn: parent
-        size: view.orbit_radius * view.px_per_km * 2
+        radius: view.orbit_radius * view.px_per_km
         color: "transparent"
         border.color: "#555555"
         border.width: 1
+
+        Circle {
+            anchors.horizontalCenter: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            radius: 5
+            color: "white"
+        }
     }
 
     Circle {
         anchors.centerIn: parent
-        size: Math.max(8, view.planet_radius * view.px_per_km * 2)
+        radius: Math.max(4, view.planet_radius * view.px_per_km)
         color: "#3b7dd8"
-    }
-
-    Item {
-        id: track
-        anchors.fill: orbit
-
-        Circle {
-            size: 10
-            color: "white"
-            x: parent.width - width / 2
-            y: parent.height / 2 - height / 2
-        }
     }
 
     FrameAnimation {
         running: true
-        onTriggered: track.rotation = (track.rotation - view.spin * frameTime) % 360
+        onTriggered: orbit.rotation = (orbit.rotation - view.spin * frameTime) % 360 // note: spinning the ring carries the satellite
     }
 
     WheelHandler {
@@ -111,8 +104,6 @@ Item {
         height: 24
 
         Label {
-            anchors.left: parent.left
-            anchors.top: parent.top
             text: scale_bar.km.toLocaleString(Qt.locale(), "f", 0) + " km"
             color: "white"
         }
@@ -122,9 +113,7 @@ Item {
             height: 2
         }
 
-        Bar {
-            anchors.left: parent.left
-        }
+        Bar {}
 
         Bar {
             anchors.right: parent.right

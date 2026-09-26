@@ -7,8 +7,9 @@ ApplicationWindow {
 
     readonly property real grav: 6.674e-11 // m³/(kg·s²)
     readonly property real orbit_radius: planet_input.value + altitude_input.value // km
-    readonly property real speed: Math.sqrt(grav * mass_input.value / (orbit_radius * 1000)) // m/s; note: circular orbit, v = √(GM/r)
-    readonly property real period: 2 * Math.PI * orbit_radius * 1000 / speed // s
+    readonly property real orbit_m: orbit_radius * 1000
+    readonly property real speed: Math.sqrt(grav * mass_input.value / orbit_m) // m/s; note: circular orbit, v = √(GM/r)
+    readonly property real period: 2 * Math.PI * orbit_m / speed // s
 
     function fmtTime(s) {
         const units = [[86400, "d"], [3600, "h"], [60, "min"], [1, "s"]]
@@ -20,7 +21,6 @@ ApplicationWindow {
     height: 675
     minimumWidth: 800
     minimumHeight: 450
-    visible: true
     visibility: Window.Maximized
     title: "Orbit Calculator"
 
