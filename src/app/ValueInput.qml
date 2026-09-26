@@ -10,10 +10,11 @@ ColumnLayout {
     property real value
     property real from
     property real to
+    property bool sci: false // note: for values too long to type in full, e.g. mass
     readonly property bool dragging: slider.pressed
 
     function fmt(v) {
-        return v.toFixed(0)
+        return sci ? v.toExponential(3) : v.toFixed(0)
     }
 
     spacing: 4
@@ -35,7 +36,7 @@ ColumnLayout {
             validator: DoubleValidator {
                 bottom: input.from
                 top: input.to
-                notation: DoubleValidator.StandardNotation
+                notation: input.sci ? DoubleValidator.ScientificNotation : DoubleValidator.StandardNotation
                 locale: "C"
             }
 
@@ -48,13 +49,16 @@ ColumnLayout {
         }
     }
 
-    // note: log scale so small and large radii are both reachable
+    // note: log scale so small and large values are both reachable
     Slider {
         id: slider
         Layout.fillWidth: true
         from: Math.log10(input.from)
         to: Math.log10(input.to)
         value: Math.log10(input.value)
-        onMoved: input.value = Math.round(Math.pow(10, value))
+        onMoved: {
+            const v = Math.pow(10, value)
+            input.value = input.sci ? Number(v.toPrecision(4)) : Math.round(v)
+        }
     }
 }

@@ -1,4 +1,4 @@
 module app
-main 254.0 main.qml
+Main 254.0 Main.qml
 OrbitView 254.0 OrbitView.qml
 ValueInput 254.0 ValueInput.qml

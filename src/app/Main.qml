@@ -42,10 +42,15 @@ ApplicationWindow {
             Layout.maximumWidth: 400
             spacing: 8
 
-            Placeholder {
+            ValueInput {
+                id: mass_input
                 label: "Planet mass"
+                unit: "kg"
+                sci: true
+                value: 5.972e24
+                from: 1e20
+                to: 1e28
                 Layout.fillWidth: true
-                Layout.preferredHeight: 64
             }
 
             ValueInput {
