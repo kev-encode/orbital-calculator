@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 
 Item {
     id: view
@@ -8,8 +9,17 @@ Item {
     property real orbit_radius: 10000
     property real period: 8000
 
+    // note: log2 so each wheel notch / slider step feels equal at any zoom
+    property real zoom_log: 0
+    readonly property real zoom_min: -3
+    readonly property real zoom_max: 5
+
     // note: fit orbit to view; planet keeps true scale relative to it
-    readonly property real px_per_km: Math.min(width, height) * 0.425 / orbit_radius
+    readonly property real px_per_km: Math.min(width, height) * 0.425 / orbit_radius * Math.pow(2, zoom_log)
+
+    function zoomBy(step) {
+        zoom_log = Math.max(zoom_min, Math.min(zoom_max, zoom_log + step))
+    }
 
     clip: true
 
@@ -55,5 +65,21 @@ Item {
             duration: view.period
             loops: Animation.Infinite
         }
+    }
+
+    WheelHandler {
+        onWheel: (event) => view.zoomBy(event.angleDelta.y / 120 * 0.25)
+    }
+
+    Slider {
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.rightMargin: 16
+        height: Math.min(parent.height - 32, 300)
+        orientation: Qt.Vertical
+        from: view.zoom_min
+        to: view.zoom_max
+        value: view.zoom_log
+        onMoved: view.zoom_log = value
     }
 }
