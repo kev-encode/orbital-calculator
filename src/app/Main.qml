@@ -4,7 +4,17 @@ import QtQuick.Layouts
 
 ApplicationWindow {
     id: root
-    readonly property real scale: Math.min(width / 1200, height / 675)
+
+    readonly property real grav: 6.674e-11 // m³/(kg·s²)
+    readonly property real orbit_radius: planet_input.value + altitude_input.value // km
+    readonly property real speed: Math.sqrt(grav * mass_input.value / (orbit_radius * 1000)) // m/s; note: circular orbit, v = √(GM/r)
+    readonly property real period: 2 * Math.PI * orbit_radius * 1000 / speed // s
+
+    function fmtTime(s) {
+        const units = [[86400, "d"], [3600, "h"], [60, "min"], [1, "s"]]
+        const [n, u] = units.find(([n]) => s >= n * 2) ?? units[3] // note: ×2 so e.g. 90 min doesn't read as 1.5 h
+        return (s / n).toFixed(1) + " " + u
+    }
 
     width: 1200
     height: 675
@@ -14,19 +24,21 @@ ApplicationWindow {
     visibility: Window.Maximized
     title: "Orbit Calculator"
 
-    // to-do: replace each `Placeholder` with its real element
-    component Placeholder: Rectangle {
+    component Stat: ColumnLayout {
         property alias label: label_text.text
+        property alias value: value_text.text
 
-        color: "transparent"
-        border.color: root.palette.mid
-        border.width: 1
-        radius: 4
+        Layout.fillWidth: true
+        spacing: 0
 
         Label {
             id: label_text
-            anchors.centerIn: parent
-            color: root.palette.placeholderText
+            color: palette.placeholderText
+        }
+
+        Label {
+            id: value_text
+            font.pixelSize: 24
         }
     }
 
@@ -50,7 +62,6 @@ ApplicationWindow {
                 value: 5.972e24
                 from: 1e20
                 to: 1e28
-                Layout.fillWidth: true
             }
 
             ValueInput {
@@ -59,7 +70,6 @@ ApplicationWindow {
                 value: 6371
                 from: 100
                 to: 100000
-                Layout.fillWidth: true
             }
 
             ValueInput {
@@ -68,23 +78,27 @@ ApplicationWindow {
                 value: 3629
                 from: 10
                 to: 100000
-                Layout.fillWidth: true
             }
 
             Item {
                 Layout.fillHeight: true
             }
 
-            Placeholder {
+            Stat {
                 label: "Orbit speed"
-                Layout.fillWidth: true
-                Layout.preferredHeight: 96
+                value: (root.speed / 1000).toFixed(2) + " km/s"
+            }
+
+            Stat {
+                label: "Orbit period"
+                value: root.fmtTime(root.period)
             }
         }
 
         OrbitView {
             planet_radius: planet_input.value
-            orbit_radius: planet_input.value + altitude_input.value
+            orbit_radius: root.orbit_radius
+            period: root.period
             frozen: planet_input.dragging || altitude_input.dragging
             Layout.fillWidth: true
             Layout.fillHeight: true

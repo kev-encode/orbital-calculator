@@ -13,6 +13,13 @@ ColumnLayout {
     property bool sci: false // note: for values too long to type in full, e.g. mass
     readonly property bool dragging: slider.pressed
 
+    function setBounds(lo, hi) {
+        if (lo >= hi) return
+        from = lo
+        to = hi
+        value = Math.min(Math.max(value, lo), hi)
+    }
+
     component NumField: TextField {
         id: field
 
@@ -23,6 +30,10 @@ ColumnLayout {
 
         function fmt(v) {
             return sci ? v.toExponential(3) : v.toFixed(0)
+        }
+
+        function resync() {
+            text = Qt.binding(() => fmt(num)) // note: binding won't fire if num is unchanged, so reassign
         }
 
         horizontalAlignment: TextInput.AlignRight
@@ -37,12 +48,13 @@ ColumnLayout {
         onEditingFinished: {
             const v = Number(text)
             if (v > 0) committed(v) // note: log slider needs values > 0
-            text = Qt.binding(() => fmt(num)) // note: resync in case the commit was rejected or clamped
+            resync() // note: in case the commit was rejected or clamped
         }
 
-        onActiveFocusChanged: if (!activeFocus) text = Qt.binding(() => fmt(num)) // note: revert rejected text; binding won't fire if num is unchanged
+        onActiveFocusChanged: if (!activeFocus) resync() // note: revert text the validator never let finish
     }
 
+    Layout.fillWidth: true
     spacing: 4
 
     RowLayout {
@@ -60,8 +72,7 @@ ColumnLayout {
             sci: input.sci
 
             onCommitted: (v) => {
-                input.from = Math.min(input.from, v) // note: out-of-range values widen the bounds
-                input.to = Math.max(input.to, v)
+                input.setBounds(Math.min(input.from, v), Math.max(input.to, v)) // note: out-of-range values widen the bounds
                 input.value = v
             }
         }
@@ -78,12 +89,7 @@ ColumnLayout {
             Layout.preferredWidth: 80
             num: input.from
             sci: input.sci
-
-            onCommitted: (v) => {
-                if (v >= input.to) return
-                input.from = v
-                input.value = Math.max(input.value, v)
-            }
+            onCommitted: (v) => input.setBounds(v, input.to)
         }
 
         // note: log scale so small and large values are both reachable
@@ -104,12 +110,7 @@ ColumnLayout {
             Layout.preferredWidth: 80
             num: input.to
             sci: input.sci
-
-            onCommitted: (v) => {
-                if (v <= input.from) return
-                input.to = v
-                input.value = Math.min(input.value, v)
-            }
+            onCommitted: (v) => input.setBounds(input.from, v)
         }
     }
 }

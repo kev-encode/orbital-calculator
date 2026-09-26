@@ -6,7 +6,9 @@ Item {
 
     property real planet_radius: 6371
     property real orbit_radius: 10000
-    property real period: 8000 // to-do: derive from orbit speed
+    property real period: 5400
+    readonly property real time_scale: 1800 // note: 1 s on screen = 30 min of orbit
+    readonly property real spin: 360 * time_scale / Math.max(period, time_scale) // note: deg/s; capped at 1 rev/s so fast orbits don't alias
 
     // note: log2 so each wheel notch / slider step feels equal at any zoom
     property real zoom_log: 0
@@ -34,6 +36,20 @@ Item {
         zoom_log = Math.max(zoom_min, Math.min(zoom_max, zoom_log + step))
     }
 
+    component Circle: Rectangle {
+        property real size
+        width: size
+        height: size
+        radius: size / 2
+    }
+
+    component Bar: Rectangle {
+        anchors.bottom: parent.bottom
+        width: 2
+        height: 8
+        color: "white"
+    }
+
     clip: true
 
     Rectangle {
@@ -41,43 +57,36 @@ Item {
         color: "black"
     }
 
-    Rectangle {
+    Circle {
         id: orbit
         anchors.centerIn: parent
-        width: view.orbit_radius * view.px_per_km * 2
-        height: width
-        radius: width / 2
+        size: view.orbit_radius * view.px_per_km * 2
         color: "transparent"
         border.color: "#555555"
         border.width: 1
     }
 
-    Rectangle {
+    Circle {
         anchors.centerIn: parent
-        width: Math.max(8, view.planet_radius * view.px_per_km * 2)
-        height: width
-        radius: width / 2
+        size: Math.max(8, view.planet_radius * view.px_per_km * 2)
         color: "#3b7dd8"
     }
 
     Item {
+        id: track
         anchors.fill: orbit
 
-        Rectangle {
-            width: 10
-            height: 10
-            radius: 5
+        Circle {
+            size: 10
             color: "white"
             x: parent.width - width / 2
             y: parent.height / 2 - height / 2
         }
+    }
 
-        RotationAnimation on rotation {
-            from: 0
-            to: -360
-            duration: view.period
-            loops: Animation.Infinite
-        }
+    FrameAnimation {
+        running: true
+        onTriggered: track.rotation = (track.rotation - view.spin * frameTime) % 360
     }
 
     WheelHandler {
@@ -108,27 +117,17 @@ Item {
             color: "white"
         }
 
-        Rectangle {
-            anchors.bottom: parent.bottom
+        Bar {
             width: parent.width
             height: 2
-            color: "white"
         }
 
-        Rectangle {
+        Bar {
             anchors.left: parent.left
-            anchors.bottom: parent.bottom
-            width: 2
-            height: 8
-            color: "white"
         }
 
-        Rectangle {
+        Bar {
             anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            width: 2
-            height: 8
-            color: "white"
         }
     }
 
