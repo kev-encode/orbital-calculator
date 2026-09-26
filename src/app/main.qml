@@ -32,10 +32,10 @@ ApplicationWindow {
 
     RowLayout {
         anchors.fill: parent
-        anchors.margins: 16
-        spacing: 16
+        spacing: 0
 
         ColumnLayout {
+            Layout.margins: 16
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.preferredWidth: 1
@@ -71,8 +71,7 @@ ApplicationWindow {
             }
         }
 
-        Placeholder {
-            label: "Orbit visualization"
+        OrbitView {
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.preferredWidth: 3
