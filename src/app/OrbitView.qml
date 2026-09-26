@@ -26,7 +26,9 @@ Item {
 
     onOrbit_radiusChanged: if (!frozen) fit_radius = orbit_radius
     onFrozenChanged: fit_radius = orbit_radius // note: assigning on freeze breaks initial binding so stops tracking
-    readonly property real px_per_km: Math.min(width, height) * 0.425 / fit_radius * Math.pow(2, zoom_log) // note: fit orbit to view; planet keeps true scale relative
+
+    // note: fit orbit to view; planet keeps true scale relative
+    readonly property real px_per_km: Math.min(width, height) * 0.425 / fit_radius * Math.pow(2, zoom_log)
 
     function zoomBy(step) {
         zoom_log = Math.max(zoom_min, Math.min(zoom_max, zoom_log + step))
