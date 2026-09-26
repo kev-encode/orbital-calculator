@@ -17,11 +17,9 @@ ColumnLayout {
         id: field
 
         required property real num
-        property real lo: 0
-        property real hi: Infinity
         property bool sci: false
 
-        signal committed(real v)
+        signal committed(real v) // note: only emitted for v > 0; range rules live in each handler
 
         function fmt(v) {
             return sci ? v.toExponential(3) : v.toFixed(0)
@@ -31,14 +29,14 @@ ColumnLayout {
         text: fmt(num)
 
         validator: DoubleValidator {
-            bottom: field.lo
-            top: field.hi
+            bottom: 0 // note: no range here; a range blocks typing digits that start below it
             notation: field.sci ? DoubleValidator.ScientificNotation : DoubleValidator.StandardNotation
             locale: "C"
         }
 
         onEditingFinished: {
-            committed(Number(text))
+            const v = Number(text)
+            if (v > 0) committed(v) // note: log slider needs values > 0
             text = Qt.binding(() => fmt(num)) // note: resync in case the commit was rejected or clamped
         }
 
@@ -59,10 +57,13 @@ ColumnLayout {
         NumField {
             Layout.preferredWidth: 96
             num: input.value
-            lo: input.from
-            hi: input.to
             sci: input.sci
-            onCommitted: (v) => input.value = v
+
+            onCommitted: (v) => {
+                input.from = Math.min(input.from, v) // note: out-of-range values widen the bounds
+                input.to = Math.max(input.to, v)
+                input.value = v
+            }
         }
 
         Label {
@@ -76,10 +77,10 @@ ColumnLayout {
         NumField {
             Layout.preferredWidth: 80
             num: input.from
-            hi: input.to
             sci: input.sci
+
             onCommitted: (v) => {
-                if (v <= 0 || v >= input.to) return // note: log slider needs 0 < from < to
+                if (v >= input.to) return
                 input.from = v
                 input.value = Math.max(input.value, v)
             }
@@ -102,9 +103,8 @@ ColumnLayout {
         NumField {
             Layout.preferredWidth: 80
             num: input.to
-            lo: input.from
             sci: input.sci
-            
+
             onCommitted: (v) => {
                 if (v <= input.from) return
                 input.to = v
