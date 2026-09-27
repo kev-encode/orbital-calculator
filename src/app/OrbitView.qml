@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Shapes
 
 Item {
     id: view
@@ -8,7 +9,8 @@ Item {
     required property real orbit_radius
     required property real period
     readonly property real time_scale: 1800 // note: 1 s on screen = 30 min of orbit
-    readonly property real spin: 360 * time_scale / Math.max(period, time_scale) // note: deg/s; capped at 1 rev/s so fast orbits don't alias
+    readonly property real spin: 360 * time_scale / period // note: deg/s; uncapped, the trail covers aliasing on fast orbits
+    readonly property real sweep: Math.min(360, spin * frame.smoothFrameTime) // note: deg moved per frame, drawn as a trail; smoothed so it doesn't flicker with frame jitter
 
     // note: log2 so each wheel notch / slider step feels equal at any zoom
     property real zoom_log: 0
@@ -63,7 +65,31 @@ Item {
         border.color: "#555555"
         border.width: 1
 
+        // note: motion blur over the arc swept each frame; a full ring once it passes 1 rev/frame
+        Shape {
+            anchors.fill: parent
+            visible: view.sweep * Math.PI / 180 * orbit.radius > satellite.width // note: skip per-frame geometry rebuilds while the trail hides under the dot
+            preferredRendererType: Shape.CurveRenderer
+            opacity: 0.5
+
+            ShapePath {
+                strokeColor: "white"
+                strokeWidth: satellite.width
+                fillColor: "transparent"
+                capStyle: ShapePath.RoundCap
+
+                PathAngleArc {
+                    centerX: orbit.radius
+                    centerY: orbit.radius
+                    radiusX: orbit.radius
+                    radiusY: orbit.radius
+                    sweepAngle: view.sweep // note: positive is clockwise, i.e. behind the counter-clockwise satellite
+                }
+            }
+        }
+
         Circle {
+            id: satellite
             anchors.horizontalCenter: parent.right
             anchors.verticalCenter: parent.verticalCenter
             radius: 5
@@ -78,8 +104,12 @@ Item {
     }
 
     FrameAnimation {
+        id: frame
         running: true
-        onTriggered: orbit.rotation = (orbit.rotation - view.spin * frameTime) % 360 // note: spinning the ring carries the satellite
+        onTriggered: {
+            const step = (view.spin * frameTime) % 360 // note: % first keeps huge steps precise
+            if (isFinite(step)) orbit.rotation = (orbit.rotation - step) % 360 // note: spinning the ring carries the satellite; skip ∞ spin (period 0) as NaN would stick forever
+        }
     }
 
     WheelHandler {

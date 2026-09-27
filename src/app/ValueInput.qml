@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -21,15 +23,13 @@ ColumnLayout {
     }
 
     component NumField: TextField {
-        id: field
-
         required property real num
-        property bool sci: false
 
         signal committed(real v) // note: only emitted for v > 0; range rules live in input.setBounds
 
         function fmt(v) {
-            return sci ? v.toExponential(3) : v.toFixed(0)
+            if (input.sci) return v.toExponential(3)
+            return v >= 100 ? v.toFixed(0) : String(Number(v.toPrecision(3))) // note: 3 sig figs below 100 so typed fractions like 0.4 don't read as 0
         }
 
         function resync() {
@@ -41,7 +41,7 @@ ColumnLayout {
 
         validator: DoubleValidator {
             bottom: 0 // note: no range here; a range blocks typing digits that start below it
-            notation: field.sci ? DoubleValidator.ScientificNotation : DoubleValidator.StandardNotation
+            notation: input.sci ? DoubleValidator.ScientificNotation : DoubleValidator.StandardNotation
             locale: "C"
         }
 
@@ -69,7 +69,6 @@ ColumnLayout {
         NumField {
             Layout.preferredWidth: 96
             num: input.value
-            sci: input.sci
 
             onCommitted: (v) => {
                 input.setBounds(Math.min(input.from, v), Math.max(input.to, v)) // note: out-of-range values widen the bounds
@@ -88,7 +87,6 @@ ColumnLayout {
         NumField {
             Layout.preferredWidth: 80
             num: input.from
-            sci: input.sci
             onCommitted: (v) => input.setBounds(v, input.to)
         }
 
@@ -102,14 +100,13 @@ ColumnLayout {
 
             onMoved: {
                 const v = Math.pow(10, value)
-                input.value = Math.max(input.from, input.sci ? Number(v.toPrecision(4)) : Math.round(v)) // note: rounding could hit 0 when from < 1
+                input.value = Math.min(input.to, Math.max(input.from, input.sci ? Number(v.toPrecision(4)) : Math.round(v))) // note: rounding can leave the range, e.g. hit 0 when from < 1
             }
         }
 
         NumField {
             Layout.preferredWidth: 80
             num: input.to
-            sci: input.sci
             onCommitted: (v) => input.setBounds(input.from, v)
         }
     }
