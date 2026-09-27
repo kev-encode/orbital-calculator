@@ -13,9 +13,17 @@ Item {
     readonly property real sweep: Math.min(360, spin * frame.smoothFrameTime) // note: deg moved per frame, drawn as a trail; smoothed so it doesn't flicker with frame jitter
 
     // note: log2 so each wheel notch / slider step feels equal at any zoom
-    property real zoom_log: 0
+    property real zoom_target: 0 // note: input writes here; zoom_log eases toward it
+    property real zoom_log: zoom_target
     readonly property real zoom_min: -3
     readonly property real zoom_max: 5
+
+    Behavior on zoom_log {
+        NumberAnimation {
+            duration: 250
+            easing.type: Easing.OutCubic // note: restarts from the current value, so rapid notches chain without jumps
+        }
+    }
 
     // note: hold scale while dragging so size changes are visible, refit on release
     property bool frozen: false
@@ -35,7 +43,7 @@ Item {
     readonly property real px_per_km: Math.min(width, height) * 0.425 / fit_radius * Math.pow(2, zoom_log)
 
     function zoomBy(step) {
-        zoom_log = Math.max(zoom_min, Math.min(zoom_max, zoom_log + step))
+        zoom_target = Math.max(zoom_min, Math.min(zoom_max, zoom_target + step)) // note: step off the target, not the animated value, so fast scrolls accumulate
     }
 
     component Circle: Rectangle {
@@ -158,7 +166,7 @@ Item {
         orientation: Qt.Vertical
         from: view.zoom_min
         to: view.zoom_max
-        value: view.zoom_log
-        onMoved: view.zoom_log = value
+        value: view.zoom_target // note: bind to target so the handle doesn't fight the easing mid-drag
+        onMoved: view.zoom_target = value
     }
 }
