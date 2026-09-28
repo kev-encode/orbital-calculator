@@ -2,6 +2,8 @@
 
 An interactive satellite orbit visualizer app.
 
+![Orbit Calculator Window](res/window.png)
+
 <br>
 
 ## **Table of Contents**
@@ -41,16 +43,12 @@ An interactive satellite orbit visualizer app.
 
 ## **Features**
 
-* Input planet mass
-* Input planet radius
-* Input orbite height from ground
-* Planet orbit presets
-    * Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune
-* Orbit period calculation
-* Orbit speed calculation
-* Zoom in/out
-* Dynamic scale 
-* Orbit and celestial body visual
+| **Feature** | **Screenshot** |
+|---|---|
+| - Input planet mass <br> - Input planet radius <br> - Input orbite height from ground | ![Orbit Calculator Inputs](res/inputs.png) |
+| - Planet orbit presets | ![Orbit Calculator Presets](res/presets.png) |
+| - Orbit period calculation <br> - Orbit speed calculation | ![Orbit Calculator Presets](res/stats.png) |
+| - Zoom in/out <br> - Dynamic scale <br> - Orbit and celestial body visual | ![Orbit Calculator Presets](res/visual.png) |
 
 <br>
 

@@ -15,7 +15,7 @@ from PySide6.QtQml import QQmlApplicationEngine
 
 if __name__ == "__main__":
     app = QGuiApplication(sys.argv)
-    app.setWindowIcon(QIcon(os.path.join(sys.path[0], "res", "icon.svg")))
+    app.setWindowIcon(QIcon(os.path.join(os.path.dirname(sys.path[0]), "res", "icon.svg")))
 
     engine = QQmlApplicationEngine()
     engine.addImportPath(sys.path[0])
