@@ -2,16 +2,22 @@
 
 An interactive satellite orbit visualizer app.
 
+<br>
+
 ## **Table of Contents**
 
 1. [Prerequisites](##prerequisites)
 2. [Installation](##installation)
 3. [Features](##features)
 
+<br>
+
 ## **Prerequisites**
 
 * Python 3.12.10
 * Pip (Python package manager)
+
+<br>
 
 ## **Installation**
 
@@ -31,6 +37,8 @@ An interactive satellite orbit visualizer app.
     python .\src\main.py
     ```
 
+<br>
+
 ## **Features**
 
 * Input planet mass
@@ -43,6 +51,8 @@ An interactive satellite orbit visualizer app.
 * Zoom in/out
 * Dynamic scale 
 * Orbit and celestial body visual
+
+<br>
 
 ---
 
