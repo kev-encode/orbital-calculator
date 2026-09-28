@@ -11,7 +11,9 @@ Item {
     required property real period
     readonly property real time_scale: 1800 // note: 1 s on screen = 30 min of orbit
     readonly property real spin: 360 * time_scale / period // note: deg/s; uncapped, the trail covers aliasing on fast orbits
-    readonly property real sweep: Math.min(360, spin * frame.smoothFrameTime) // note: deg moved per frame, drawn as a trail; smoothed so it doesn't flicker with frame jitter
+
+    // note: deg moved per frame, drawn as a trail; smoothed so it doesn't flicker with frame jitter
+    readonly property real sweep: Math.min(360, spin * frame.smoothFrameTime)
 
     // note: log2 so each wheel notch / slider step feels equal at any zoom
     property real zoom_target: 0 // note: input writes here; zoom_log eases toward it
@@ -44,7 +46,8 @@ Item {
     readonly property real px_per_km: Math.min(width, height) * 0.425 / fit_radius * Math.pow(2, zoom_log)
 
     function zoomBy(step) {
-        zoom_target = Math.max(zoom_min, Math.min(zoom_max, zoom_target + step)) // note: step off the target, not the animated value, so fast scrolls accumulate
+        // note: step off the target, not the animated value, so fast scrolls accumulate
+        zoom_target = Math.max(zoom_min, Math.min(zoom_max, zoom_target + step))
     }
 
     component Circle: Rectangle {
@@ -62,8 +65,9 @@ Item {
         rotation: -45 // note: tilts the vertical gradient so light falls from the top-left
 
         gradient: Gradient {
+            // note: optional shade, so self-lit bodies like the Sun barely darken
             GradientStop { position: 0; color: Qt.lighter(planet.color, 1.3) }
-            GradientStop { position: 1; color: Qt.darker(planet.color, planet.body.shade ?? 2.5) } // note: optional shade, so self-lit bodies like the Sun barely darken
+            GradientStop { position: 1; color: Qt.darker(planet.color, planet.body.shade ?? 2.5) }
         }
     }
 
@@ -132,7 +136,8 @@ Item {
         running: true
         onTriggered: {
             const step = (view.spin * frameTime) % 360 // note: % first keeps huge steps precise
-            if (isFinite(step)) orbit.rotation = (orbit.rotation - step) % 360 // note: spinning the ring carries the satellite; skip ∞ spin (period 0) as NaN would stick forever
+            // note: spinning the ring carries the satellite; skip ∞ spin (period 0) as NaN would stick forever
+            if (isFinite(step)) orbit.rotation = (orbit.rotation - step) % 360 
         }
     }
 

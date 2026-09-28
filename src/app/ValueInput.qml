@@ -101,7 +101,8 @@ ColumnLayout {
 
             onMoved: {
                 const v = Math.pow(10, value)
-                input.value = Math.min(input.to, Math.max(input.from, input.sci ? Number(v.toPrecision(4)) : Math.round(v))) // note: rounding can leave the range, e.g. hit 0 when from < 1
+                // note: rounding can leave the range, e.g. hit 0 when from < 1
+                input.value = Math.min(input.to, Math.max(input.from, input.sci ? Number(v.toPrecision(4)) : Math.round(v)))
             }
         }
 
