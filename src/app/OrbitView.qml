@@ -6,6 +6,7 @@ Item {
     id: view
 
     required property real planet_radius
+    required property var body // note: design only; size comes from planet_radius
     required property real orbit_radius
     required property real period
     readonly property real time_scale: 1800 // note: 1 s on screen = 30 min of orbit
@@ -47,8 +48,23 @@ Item {
     }
 
     component Circle: Rectangle {
-        width: radius * 2 // note: callers set radius; Rectangle's corner radius doubles as the circle's
-        height: width
+        implicitWidth: radius * 2 // note: callers set radius; Rectangle's corner radius doubles as the circle's; implicit so layouts size it too
+        implicitHeight: implicitWidth
+    }
+
+    // note: shared with the preset list as OrbitView.Planet; callers set radius and body
+    component Planet: Circle {
+        id: planet
+
+        required property var body
+
+        color: body.color
+        rotation: -45 // note: tilts the vertical gradient so light falls from the top-left
+
+        gradient: Gradient {
+            GradientStop { position: 0; color: Qt.lighter(planet.color, 1.3) }
+            GradientStop { position: 1; color: Qt.darker(planet.color, planet.body.shade ?? 2.5) } // note: optional shade, so self-lit bodies like the Sun barely darken
+        }
     }
 
     component Bar: Rectangle {
@@ -105,10 +121,10 @@ Item {
         }
     }
 
-    Circle {
+    Planet {
         anchors.centerIn: parent
         radius: Math.max(4, view.planet_radius * view.px_per_km)
-        color: "#3b7dd8"
+        body: view.body
     }
 
     FrameAnimation {

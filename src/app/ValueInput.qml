@@ -22,10 +22,15 @@ ColumnLayout {
         value = Math.min(Math.max(value, lo), hi)
     }
 
+    function setValue(v) {
+        setBounds(Math.min(from, v), Math.max(to, v)) // note: out-of-range values widen the bounds
+        value = v
+    }
+
     component NumField: TextField {
         required property real num
 
-        signal committed(real v) // note: only emitted for v > 0; range rules live in input.setBounds
+        signal committed(real v) // note: only emitted for v > 0; range rules live in input.setBounds and input.setValue
 
         function fmt(v) {
             if (input.sci) return v.toExponential(3)
@@ -69,11 +74,7 @@ ColumnLayout {
         NumField {
             Layout.preferredWidth: 96
             num: input.value
-
-            onCommitted: (v) => {
-                input.setBounds(Math.min(input.from, v), Math.max(input.to, v)) // note: out-of-range values widen the bounds
-                input.value = v
-            }
+            onCommitted: (v) => input.setValue(v)
         }
 
         Label {

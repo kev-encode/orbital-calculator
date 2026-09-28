@@ -2,10 +2,31 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Basic as Basic
 import QtQuick.Layouts
 
 ApplicationWindow {
     id: root
+
+    readonly property var bodies: [ // note: mass in kg, mean radius in km; ordered outward from the Sun
+        { name: "Sun", mass: 1.989e30, radius: 695700, color: "#ffc02e", shade: 1.3 },
+        { name: "Mercury", mass: 3.301e23, radius: 2439.7, color: "#9e9a95" },
+        { name: "Venus", mass: 4.867e24, radius: 6051.8, color: "#e6d3a3" },
+        { name: "Earth", mass: 5.972e24, radius: 6371, color: "#3b7dd8" },
+        { name: "Mars", mass: 6.417e23, radius: 3389.5, color: "#c1440e" },
+        { name: "Jupiter", mass: 1.898e27, radius: 69911, color: "#c8905c" },
+        { name: "Saturn", mass: 5.683e26, radius: 58232, color: "#d4b06a" },
+        { name: "Uranus", mass: 8.681e25, radius: 25362, color: "#7fd4e0" },
+        { name: "Neptune", mass: 1.024e26, radius: 24622, color: "#2f4bbf" }
+    ]
+    property int picked: 3 // note: Earth is the default; index, as list models copy objects so === can't match them
+    readonly property var body: bodies[picked]
+
+    function pick(i) {
+        picked = i
+        mass_input.setValue(body.mass) // note: re-picking the current body restores its values
+        planet_input.setValue(body.radius)
+    }
 
     readonly property real grav: 6.674e-11 // m³/(kg·s²)
     readonly property real orbit_radius: planet_input.value + altitude_input.value // km
@@ -16,6 +37,7 @@ ApplicationWindow {
     readonly property real day: 86400 // s
     readonly property real year: 365.25 * day // note: Julian year, as the IAU light-year uses
     readonly property real planck: 5.391247e-44 // s; CODATA 2018
+
     readonly property var time_units: [ // note: var lists become QML sequences, which lack .at()
         [year * 1000, "millennia"], [year * 100, "centuries"], [year * 10, "decades"], [year, "years"], // note: spelled out as decades etc. have no common abbreviation
         [day, "d"], [3600, "h"], [60, "min"], [1, "s"],
@@ -27,6 +49,7 @@ ApplicationWindow {
     ]
 
     readonly property real c: 299792458 // m/s, i.e. 1 light-second per second
+    
     readonly property var speed_units: [
         [c * year, "light-years per second"],
         [c * day, "light-days per second"], [c * 3600, "light-hours per second"],
@@ -102,17 +125,17 @@ ApplicationWindow {
                 label: "Planet mass"
                 unit: "kg"
                 sci: true
-                value: 5.972e24
+                value: root.body.mass
                 from: 1e20
-                to: 1e28
+                to: 1e31 // note: covers every preset, so picking one never widens the range
             }
 
             ValueInput {
                 id: planet_input
                 label: "Planet radius"
-                value: 6371
+                value: root.body.radius
                 from: 100
-                to: 100000
+                to: 1e6
             }
 
             ValueInput {
@@ -123,8 +146,74 @@ ApplicationWindow {
                 to: 100000
             }
 
-            Item {
+            Label {
+                Layout.topMargin: 8
+                text: "Presets"
+                color: palette.placeholderText
+            }
+
+            ListView {
+                Layout.fillWidth: true
                 Layout.fillHeight: true
+                clip: true
+                boundsBehavior: Flickable.StopAtBounds
+                model: root.bodies
+                ScrollBar.vertical: Basic.ScrollBar {} // note: Basic's thin overlay bar; the native one is light even in dark mode
+
+                // note: plain Rectangle, not ItemDelegate, as the native Windows style paints delegates light even in dark mode
+                delegate: Rectangle {
+                    id: preset
+
+                    required property var modelData
+                    required property int index
+
+                    width: ListView.view.width
+                    implicitHeight: row.implicitHeight + 16
+                    radius: 4
+                    color: hover.hovered ? root.palette.button : "transparent"
+                    border.color: index === root.picked ? root.palette.accent : "transparent"
+                    border.width: 2
+
+                    HoverHandler {
+                        id: hover
+                        cursorShape: Qt.PointingHandCursor
+                    }
+
+                    TapHandler {
+                        onTapped: root.pick(preset.index)
+                    }
+
+                    RowLayout {
+                        id: row
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        spacing: 12
+
+                        OrbitView.Planet {
+                            radius: 16
+                            body: preset.modelData
+                        }
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 0
+
+                            Label {
+                                Layout.fillWidth: true
+                                text: preset.modelData.name
+                                color: root.palette.windowText // note: delegates don't inherit the window's dark palette, so bind it explicitly
+                                elide: Text.ElideRight
+                            }
+
+                            Label {
+                                Layout.fillWidth: true
+                                text: preset.modelData.mass.toExponential(3) + " kg · " + preset.modelData.radius + " km" // note: mass in the input's notation; radius unrounded, unlike its input
+                                color: root.palette.placeholderText
+                                elide: Text.ElideRight
+                            }
+                        }
+                    }
+                }
             }
 
             Stat {
@@ -140,6 +229,7 @@ ApplicationWindow {
 
         OrbitView {
             planet_radius: planet_input.value
+            body: root.body // note: design stays with the picked body even as inputs are edited
             orbit_radius: root.orbit_radius
             period: root.period
             frozen: planet_input.dragging || altitude_input.dragging
