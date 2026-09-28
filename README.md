@@ -8,9 +8,9 @@ An interactive satellite orbit visualizer app.
 
 ## **Table of Contents**
 
-1. [Prerequisites](##prerequisites)
-2. [Installation](##installation)
-3. [Features](##features)
+1. [Prerequisites](#prerequisites)
+2. [Installation](#installation)
+3. [Features](#features)
 
 <br>
 
