@@ -1,19 +1,19 @@
-# Orbital Calculator
+# **Orbital Calculator**
 
 An interactive satellite orbit visualizer app.
 
-## Table of Contents
+## **Table of Contents**
 
 1. [Prerequisites](##prerequisites)
 2. [Installation](##installation)
 3. [Features](##features)
 
-## Prerequisites
+## **Prerequisites**
 
 * Python 3.12.10
 * Pip (Python package manager)
 
-## Installation
+## **Installation**
 
 1. Set up virtual environment, enter, and install requirements.
 
@@ -31,7 +31,7 @@ An interactive satellite orbit visualizer app.
     python .\src\main.py
     ```
 
-## Features
+## **Features**
 
 * Input planet mass
 * Input planet radius
@@ -46,4 +46,4 @@ An interactive satellite orbit visualizer app.
 
 ---
 
-Last updated: 9/28/2026
+*Last updated: 9/28/2026*
