@@ -109,17 +109,17 @@ ApplicationWindow {
 
     // note: always dark, whatever the OS theme, to match the space view; sets every role the used controls read (incl. the fields' context menu), so none falls back to a light system color
     palette {
-        window: "#0e1116"
-        windowText: "#e6e9ef"
-        base: "#161a21"
-        text: "#e6e9ef"
-        button: "#1a1f27"
-        light: "#232833"
-        midlight: "#1d222b"
-        mid: "#2a303b"
-        dark: "#3a414e"
-        accent: "#5eb1ff"
-        highlight: "#5eb1ff"
+        window:          "#0e1116"
+        windowText:      "#e6e9ef"
+        base:            "#161a21"
+        text:            "#e6e9ef"
+        button:          "#1a1f27"
+        light:           "#232833"
+        midlight:        "#1d222b"
+        mid:             "#2a303b"
+        dark:            "#3a414e"
+        accent:          "#5eb1ff"
+        highlight:       "#5eb1ff"
         highlightedText: "#0b0e13"
         placeholderText: "#8a93a3"
     }
