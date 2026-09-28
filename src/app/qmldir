@@ -1,4 +1,6 @@
 module app
 Main 254.0 Main.qml
 OrbitView 254.0 OrbitView.qml
+Planet 254.0 Planet.qml
+SlimSlider 254.0 SlimSlider.qml
 ValueInput 254.0 ValueInput.qml

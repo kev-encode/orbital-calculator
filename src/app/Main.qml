@@ -1,8 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Controls.Basic as Basic
+import QtQuick.Controls.Basic // note: Basic is the lightest style, fully palette-driven, and fixed at compile time
 import QtQuick.Layouts
 
 ApplicationWindow {
@@ -27,11 +26,11 @@ ApplicationWindow {
     function pick(i) {
         picked = i
         mass_input.setValue(body.mass) // note: re-picking the current body restores its values
-        planet_input.setValue(body.radius)
+        radius_input.setValue(body.radius)
     }
 
     readonly property real grav: 6.674e-11 // note: in (m^3)/(kg * s^2)
-    readonly property real orbit_radius: planet_input.value + altitude_input.value // note: in km
+    readonly property real orbit_radius: radius_input.value + altitude_input.value // note: in km
     readonly property real orbit_m: orbit_radius * 1000
     readonly property real speed: Math.sqrt(grav * mass_input.value / orbit_m) // note: in m/s; circular orbit, v = sqrt(GM/r)
     readonly property real period: 2 * Math.PI * orbit_m / speed               // note: in s
@@ -66,7 +65,7 @@ ApplicationWindow {
     ]
 
     readonly property real c: 299792458 // note: in m/s (e.g., 1 light-second per second)
-    
+
     readonly property var speed_units: [
         [c * year, "light-years per second"],
         [c * day, "light-days per second"],
@@ -108,19 +107,43 @@ ApplicationWindow {
     visibility: Window.Maximized
     title: "Orbit Calculator"
 
+    // note: always dark, whatever the OS theme, to match the space view; sets every role the used controls read (incl. the fields' context menu), so none falls back to a light system color
+    palette {
+        window: "#0e1116"
+        windowText: "#e6e9ef"
+        base: "#161a21"
+        text: "#e6e9ef"
+        button: "#1a1f27"
+        light: "#232833"
+        midlight: "#1d222b"
+        mid: "#2a303b"
+        dark: "#3a414e"
+        accent: "#5eb1ff"
+        highlight: "#5eb1ff"
+        highlightedText: "#0b0e13"
+        placeholderText: "#8a93a3"
+    }
+
+    component Caption: Label {
+        font.pixelSize: 11
+        font.weight: Font.DemiBold
+        font.letterSpacing: 1.2
+        font.capitalization: Font.AllUppercase
+        color: palette.placeholderText
+    }
+
     component Stat: ColumnLayout {
         property alias label: label_text.text
         property alias value: value_text.text
         spacing: 0
 
-        Label {
+        Caption {
             id: label_text
-            color: palette.placeholderText
         }
 
         Label {
             id: value_text
-            font.pixelSize: stat_metrics.font.pixelSize
+            font: stat_metrics.font // note: the exact font stat_width measures
         }
     }
 
@@ -128,6 +151,7 @@ ApplicationWindow {
         id: stat_metrics
         font.family: root.font.family
         font.pixelSize: 24
+        font.weight: Font.Medium
     }
 
     RowLayout {
@@ -141,7 +165,7 @@ ApplicationWindow {
             Layout.preferredWidth: 1
             Layout.minimumWidth: root.stat_width
             Layout.maximumWidth: Math.max(400, root.stat_width)
-            spacing: 8
+            spacing: 10
 
             ValueInput {
                 id: mass_input
@@ -154,7 +178,7 @@ ApplicationWindow {
             }
 
             ValueInput {
-                id: planet_input
+                id: radius_input
                 label: "Planet radius"
                 value: root.body.radius
                 from: 100
@@ -169,21 +193,30 @@ ApplicationWindow {
                 to: 100000
             }
 
-            Label {
-                Layout.topMargin: 8
+            Caption {
+                Layout.topMargin: 4
                 text: "Presets"
-                color: palette.placeholderText
             }
 
             ListView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                Layout.leftMargin: -8 // note: bleed rows into the panel margin so their text lines up with the inputs
+                Layout.rightMargin: -8
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
                 model: root.bodies
-                ScrollBar.vertical: Basic.ScrollBar {} // note: Basic's thin overlay bar; the native one is light even in dark mode
+                currentIndex: root.picked
+                highlightMoveDuration: 200 // note: the selection glides between rows
+                highlightMoveVelocity: -1  // note: duration only, so long jumps take as long as short ones
+                ScrollBar.vertical: ScrollBar {}
 
-                // note: plain Rectangle, not ItemDelegate, as the native Windows style paints delegates light even in dark mode
+                highlight: Rectangle {
+                    radius: 8
+                    color: Qt.alpha(root.palette.accent, 0.1)
+                    border.color: Qt.alpha(root.palette.accent, 0.5)
+                }
+
                 delegate: Rectangle {
                     id: preset
 
@@ -192,10 +225,13 @@ ApplicationWindow {
 
                     width: ListView.view.width
                     implicitHeight: row.implicitHeight + 16
-                    radius: 4
-                    color: hover.hovered ? root.palette.button : "transparent"
-                    border.color: index === root.picked ? root.palette.accent : "transparent"
-                    border.width: 2
+                    radius: 8
+                    // note: translucent so the highlight beneath stays visible
+                    color: hover.hovered ? Qt.rgba(1, 1, 1, 0.04) : "transparent"
+
+                    Behavior on color {
+                        ColorAnimation { duration: 120 }
+                    }
 
                     HoverHandler {
                         id: hover
@@ -212,8 +248,8 @@ ApplicationWindow {
                         anchors.margins: 8
                         spacing: 12
 
-                        OrbitView.Planet {
-                            radius: 16
+                        Planet {
+                            radius: 14
                             body: preset.modelData
                         }
 
@@ -224,7 +260,7 @@ ApplicationWindow {
                             Label {
                                 Layout.fillWidth: true
                                 text: preset.modelData.name
-                                color: root.palette.windowText // note: delegates don't inherit the window's dark palette, so bind it explicitly
+                                font.weight: Font.Medium
                                 elide: Text.ElideRight
                             }
 
@@ -232,12 +268,19 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 // note: mass in the input's notation; radius unrounded, unlike its input
                                 text: preset.modelData.mass.toExponential(3) + " kg · " + preset.modelData.radius + " km"
+                                font.pixelSize: 11
                                 color: root.palette.placeholderText
                                 elide: Text.ElideRight
                             }
                         }
                     }
                 }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                implicitHeight: 1
+                color: root.palette.mid
             }
 
             Stat {
@@ -251,12 +294,18 @@ ApplicationWindow {
             }
         }
 
+        Rectangle {
+            Layout.fillHeight: true
+            implicitWidth: 1
+            color: root.palette.mid
+        }
+
         OrbitView {
-            planet_radius: planet_input.value
+            planet_radius: radius_input.value
             body: root.body // note: design stays with the picked body even as inputs are edited
             orbit_radius: root.orbit_radius
             period: root.period
-            frozen: planet_input.dragging || altitude_input.dragging
+            frozen: radius_input.dragging || altitude_input.dragging
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.preferredWidth: 3
