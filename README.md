@@ -23,6 +23,15 @@ An interactive satellite orbit visualizer app.
 
 ## **Installation**
 
+1. Clone repository and move into it.
+
+    **Windows**
+
+    ```bash
+    git clone https://github.com/kev-encode/orbital-calculator
+    cd .\orbital-calculator\
+    ```
+
 1. Set up virtual environment, enter, and install requirements.
 
     **Windows**
@@ -34,6 +43,8 @@ An interactive satellite orbit visualizer app.
     ```
 
 2. Run app.
+
+    **Windows**
 
     ```bash
     python .\src\main.py
